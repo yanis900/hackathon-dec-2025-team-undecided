@@ -2,8 +2,8 @@ import type {
   AllMiddlewareArgs,
   SlackShortcutMiddlewareArgs,
 } from "@slack/bolt";
-import { createJiraTicket } from "../../handlers/create-jira-ticket.js";
 import axios from "axios";
+import { fetchJiraProjects } from "../../handlers/get-jira-projects.js";
 
 const createJiraFromThreadShortcut = async ({
   ack,
@@ -22,21 +22,6 @@ const createJiraFromThreadShortcut = async ({
     const channel = body.channel.id;
     const message = body.message;
     const threadTs = message.thread_ts ?? message.ts;
-
-    interface JiraProject {
-      id: string;
-      key: string;
-      name: string;
-    }
-
-    // Dummy projects for testing
-    const dummyProjects: JiraProject[] = [
-      { id: "1", key: "PROJ1", name: "Website Redesign" },
-      { id: "2", key: "PROJ2", name: "Mobile App" },
-      { id: "3", key: "PROJ3", name: "Internal Tools" },
-      { id: "4", key: "PROJ4", name: "Customer Support" },
-      { id: "5", key: "PROJ5", name: "Marketing Campaign" },
-    ];
 
     const replies = await client.conversations.replies({
       channel,
@@ -59,6 +44,10 @@ const createJiraFromThreadShortcut = async ({
       });
       return;
     }
+
+    const projects = await fetchJiraProjects();
+
+    console.log("Fetched Jira projects:", projects);
 
     await client.views.open({
       trigger_id: body.trigger_id,
@@ -88,7 +77,7 @@ const createJiraFromThreadShortcut = async ({
             element: {
               type: "static_select",
               action_id: "project_select",
-              options: dummyProjects.map((project) => ({
+              options: projects.map((project) => ({
                 text: {
                   type: "plain_text",
                   text: `${project.name} (${project.key})`,
@@ -105,17 +94,6 @@ const createJiraFromThreadShortcut = async ({
       text: `Found ${replies.messages.length} messages. Creating Jira ticket…`,
       thread_ts: threadTs,
     });
-
-    // TODO: LLM to summarize the thread and extract relevant details
-
-    // const issue = await createJiraTicket({
-    //   fields: {
-    //     project: { key: "PII" },
-    //     summary: "Improve login error handling",
-    //     issuetype: { name: "Bug" },
-    //     priority: { name: "High" },
-    //   },
-    // });
 
   } catch (error) {
     logger.error("createJiraFromThreadAction failed", error);

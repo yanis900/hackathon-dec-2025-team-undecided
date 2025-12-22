@@ -20,20 +20,21 @@ const createJiraModalView = async ({
     if (!selectedProjectKey) {
       throw new Error("Missing required fields");
     }
+    // TODO: LLM to summarize the thread and extract relevant details
 
-    //  const issue = await createJiraTicket({
-    //   fields: {
-    //     project: { key: "PII" },
-    //     summary: "Improve login error handling",
-    //     issuetype: { name: "Bug" },
-    //     priority: { name: "High" },
-    //   },
-    // });
+     const issue = await createJiraTicket({
+      fields: {
+        project: { key: selectedProjectKey },
+        summary: "Test Jira Sync Bot",
+        issuetype: { name: "Bug" },
+        priority: { name: "High" },
+      },
+    });
 
     await client.chat.postMessage({
       channel,
       thread_ts: threadTs,
-      text: `🎫 Jira ticket created: *PII: Improve login error handling*`,
+      text: `🎫 Jira ticket created: <${process.env.JIRA_BASE_URL}/browse/${selectedProjectKey}|${selectedProjectKey}: Test Jira Sync Bot>`,
     });
 
   } catch (error) {
