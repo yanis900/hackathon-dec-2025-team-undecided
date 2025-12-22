@@ -1,10 +1,5 @@
 import axios from "axios";
-
-interface JiraProject {
-  id: string;
-  key: string;
-  name: string;
-}
+import { JiraProject } from "../types.js";
 
 export const fetchJiraProjects = async (): Promise<JiraProject[]> => {
   const authHeader = Buffer.from(

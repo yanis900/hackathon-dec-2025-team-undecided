@@ -1,12 +1,7 @@
-import { AllMiddlewareArgs, SlackViewMiddlewareArgs } from "@slack/bolt";
-import { createJiraTicket } from "../../handlers/create-jira-ticket.js";
+import type { AllMiddlewareArgs, SlackViewMiddlewareArgs } from '@slack/bolt';
+import { createJiraTicket } from '../../handlers/create-jira-ticket.js';
 
-const createJiraModalView = async ({
-  ack,
-  client,
-  logger,
-  view,
-}: AllMiddlewareArgs & SlackViewMiddlewareArgs) => {
+const createJiraModalView = async ({ ack, client, logger, view }: AllMiddlewareArgs & SlackViewMiddlewareArgs) => {
   await ack();
 
   try {
@@ -14,31 +9,28 @@ const createJiraModalView = async ({
     const channel = metadata.channel;
     const threadTs = metadata.threadTs;
 
-    const selectedProjectKey =
-      view.state.values.project_block.project_select.selected_option?.value;
+    const selectedProjectKey = view.state.values.project_block.project_select.selected_option?.value;
 
     if (!selectedProjectKey) {
-      throw new Error("Missing required fields");
+      throw new Error('Missing required fields');
     }
     // TODO: LLM to summarize the thread and extract relevant details
 
-     const issue = await createJiraTicket({
+    const issue = await createJiraTicket({
       fields: {
-        project: { key: selectedProjectKey },
-        summary: "Test Jira Sync Bot",
-        issuetype: { name: "Bug" },
-        priority: { name: "High" },
+        project: { key: 'PII' },
+        summary: 'Test Jira Sync Bot',
+        issuetype: { name: 'Bug' },
       },
     });
 
     await client.chat.postMessage({
       channel,
       thread_ts: threadTs,
-      text: `🎫 Jira ticket created: <${process.env.JIRA_BASE_URL}/browse/${selectedProjectKey}|${selectedProjectKey}: Test Jira Sync Bot>`,
+      text: `🎫 Jira ticket created: <${process.env.JIRA_BASE_URL}/browse/${issue.key}|${issue.key}: Test Jira Sync Bot>`,
     });
-
   } catch (error) {
-    logger.error("Failed to submit Jira modal", error);
+    logger.error('Failed to submit Jira modal', error);
   }
 };
 

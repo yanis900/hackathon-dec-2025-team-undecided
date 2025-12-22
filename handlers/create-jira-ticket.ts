@@ -1,33 +1,12 @@
-import axios, { AxiosError } from 'axios';
-
-interface CreateJiraTicketResponse {
-  id: string;
-  key: string;
-  self: string;
-}
-
-interface CreateJiraTicketPayload {
-  fields: {
-    project: {
-      key: string;
-    };
-    summary: string;
-    description?: unknown;
-    issuetype: {
-      name: string;
-    };
-    priority?: {
-      name: string;
-    };
-  };
-}
+import axios from "axios";
+import { CreateJiraTicketPayload, CreateJiraTicketResponse } from "../types.js";
 
 export const createJiraTicket = async (
   payload: CreateJiraTicketPayload
 ): Promise<CreateJiraTicketResponse> => {
   const authHeader = Buffer.from(
     `${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`
-  ).toString('base64');
+  ).toString("base64");
 
   const response = await axios.post<CreateJiraTicketResponse>(
     `${process.env.JIRA_BASE_URL}/rest/api/3/issue`,
@@ -35,8 +14,8 @@ export const createJiraTicket = async (
     {
       headers: {
         Authorization: `Basic ${authHeader}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
     }
   );
