@@ -6,15 +6,32 @@ export const fetchJiraProjects = async (): Promise<JiraProject[]> => {
     `${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`
   ).toString("base64");
 
-  const response = await axios.get(
-    "https://eurostar.atlassian.net/rest/api/3/project/search",
-    {
-      headers: {
-        Authorization: `Basic ${authHeader}`,
-        Accept: "application/json",
-      },
-    }
-  );
+  const allProjects: JiraProject[] = [];
+  let startAt = 0;
+  const maxResults = 50;
+  let isLast = false;
 
-  return response.data.values;
+  while (!isLast) {
+    const response = await axios.get(
+      "https://eurostar.atlassian.net/rest/api/3/project/search",
+      {
+        headers: {
+          Authorization: `Basic ${authHeader}`,
+          Accept: "application/json",
+        },
+        params: {
+          startAt,
+          maxResults,
+        },
+      }
+    );
+
+    const { values, isLast: last } = response.data;
+
+    allProjects.push(...values);
+    isLast = last;
+    startAt += maxResults;
+  }
+
+  return allProjects;
 };

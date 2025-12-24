@@ -1,6 +1,9 @@
-import type { AllMiddlewareArgs, SlackShortcutMiddlewareArgs } from '@slack/bolt';
-import axios from 'axios';
-import { fetchJiraProjects } from '../../handlers/get-jira-projects.js';
+import type {
+  AllMiddlewareArgs,
+  SlackShortcutMiddlewareArgs,
+} from "@slack/bolt";
+import axios from "axios";
+import { fetchJiraProjects } from "../../handlers/get-jira-projects.js";
 
 const createJiraFromThreadShortcut = async ({
   ack,
@@ -12,7 +15,7 @@ const createJiraFromThreadShortcut = async ({
   try {
     await ack();
 
-    if (body.type !== 'message_action') {
+    if (body.type !== "message_action") {
       return;
     }
 
@@ -29,79 +32,79 @@ const createJiraFromThreadShortcut = async ({
 
     if (!replies.ok || !replies.messages?.length) {
       await respond({
-        text: 'Could not read the thread.',
-        response_type: 'ephemeral',
+        text: "Could not read the thread.",
+        response_type: "ephemeral",
       });
       return;
     }
 
     if (replies.messages.length === 1) {
       await respond({
-        text: 'The thread has only one message. Please add more context before creating a Jira ticket.',
-        response_type: 'ephemeral',
+        text: "The thread has only one message. Please add more context before creating a Jira ticket.",
+        response_type: "ephemeral",
       });
       return;
     }
 
-    // TODO: Fetch Jira projects and cache them
-    // FIXME: Not currently fetching all projects
+    // console.log("Thread Messages:", JSON.stringify(threadMessages, null, 2));
+
     const projects = await fetchJiraProjects();
+
+    // console.log(JSON.stringify(projects, null, 2))
 
     await client.views.open({
       trigger_id: body.trigger_id,
       view: {
-        type: 'modal',
-        callback_id: 'create_jira_modal',
+        type: "modal",
+        callback_id: "create_jira_modal",
         private_metadata: JSON.stringify({
           channel,
           threadTs,
         }),
         title: {
-          type: 'plain_text',
-          text: 'Create Jira ticket',
+          type: "plain_text",
+          text: "Create Jira ticket",
         },
         submit: {
-          type: 'plain_text',
-          text: 'Create',
+          type: "plain_text",
+          text: "Create",
         },
         blocks: [
           {
-            type: 'input',
-            block_id: 'project_block',
+            type: "input",
+            block_id: "project_block",
             label: {
-              type: 'plain_text',
-              text: 'Jira project',
+              type: "plain_text",
+              text: "Jira project",
             },
             element: {
-              type: 'static_select',
-              action_id: 'project_select',
-              options: projects.map((project) => ({
-                text: {
-                  type: 'plain_text',
-                  text: `${project.name} (${project.key})`,
-                },
-                value: project.key,
-              })),
+              type: "external_select",
+              action_id: "project_select",
+              placeholder: {
+                type: "plain_text",
+                text: "Search Jira projects",
+              },
+              min_query_length: 0,
             },
           },
         ],
       },
     });
 
-    await respond({
-      text: `Found ${replies.messages.length} messages. Creating Jira ticket…`,
-      thread_ts: threadTs,
-    });
+    // await respond({
+    //   text: `Found ${replies.messages.length} messages. Creating Jira ticket…`,
+    //   thread_ts: threadTs,
+    // });
   } catch (error) {
-    logger.error('createJiraFromThreadAction failed', error);
+    logger.error("createJiraFromThreadAction failed", error);
 
     if (axios.isAxiosError(error)) {
-      console.error('Jira error:', error.response?.data);
+      console.error("Jira error:", error.response?.data);
     }
 
     await respond({
-      text: 'Failed to create Jira ticket.',
-      response_type: 'ephemeral',
+      text: "Failed to create Jira ticket.",
+      response_type: "ephemeral",
     });
   }
 };
