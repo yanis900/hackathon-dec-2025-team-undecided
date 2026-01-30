@@ -38,13 +38,10 @@ const createJiraModalView = async ({
       threadMessages,
     });
 
-    console.log("Initial Jira Payload:", JSON.stringify(jiraPayload, null, 2));
-
     if (typeof jiraPayload.fields.description === "string") {
       jiraPayload.fields.description = toADF(jiraPayload.fields.description);
     }
 
-    // console.log("Jira Payload:", JSON.stringify(jiraPayload, null, 2));
     const issue = await createJiraTicket(jiraPayload);
 
     await client.chat.postMessage({

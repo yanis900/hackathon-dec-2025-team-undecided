@@ -1,51 +1,67 @@
-import OpenAI from "openai";
 import { CreateJiraTicketPayload } from "../types.js";
+import { createAzure } from "@ai-sdk/azure";
+import { generateText, APICallError } from "ai";
 
-const openai = new OpenAI();
-
-export const createOpenaiResponse = async ({
-  projectKey,
-  threadMessages,
-}: {
+type CreateOpenaiResponseParams = {
   projectKey: string;
   threadMessages: string[];
-}): Promise<CreateJiraTicketPayload> => {
-  const prompt = `
-You are an assistant that converts Slack thread discussions into Jira issue fields.
+};
 
-Generate a Jira issue payload that matches EXACTLY this TypeScript shape:
+export const createOpenaiResponse = async (
+  params: CreateOpenaiResponseParams,
+): Promise<CreateJiraTicketPayload> => {
+  const apiKey = process.env.OPENAI_API_SECRET;
+  const resourceName = process.env.OPENAI_API_RESOURCE_NAME;
 
-{
-  "fields": {
-    "project": { "key": string },
-    "summary": string,
-    "description"?: unknown,
-    "issuetype": { "name": string },
-    "priority"?: { "name": string },
+  if (!apiKey || !resourceName) {
+    throw new Error("Missing Azure OpenAI configuration");
   }
-}
 
-Rules:
-- Return ONLY valid JSON.
-- Summary must be concise (max 120 characters) — a one-line title of the issue.
-- Description must be a clear, structured explanation of the issue or request — do NOT repeat the thread verbatim.
-- Use Jira issue types: Bug, Task, Sub-task, Story, Outline use case / epic, Spike, Retro task.
-- Use Jira priorities: Lowest, Low, Medium, High, Highest.
-- If priority is unclear, omit it.
-- Use the provided project key: "${projectKey}".
-
-Slack thread messages:
-"""
-${threadMessages.join("\n")}
-"""
-`;
-
-  console.log(JSON.stringify(threadMessages, null, 2));
-  console.log("Fetching OpenAI response...");
-  const response = await openai.responses.create({
-    model: "gpt-5-nano",
-    input: prompt,
+  const openai = createAzure({
+    resourceName,
+    apiKey,
   });
 
-  return JSON.parse(response.output_text);
+  try {
+    const response = await generateText({
+      model: openai("gpt-4o"),
+      prompt: `
+      You are an assistant that converts Slack thread discussions into Jira issue fields.
+      Generate a Jira issue payload that matches EXACTLY this TypeScript shape:
+      
+      {
+        "fields": {
+          "project": { "key": string },
+          "summary": string,
+          "description"?: unknown,
+          "issuetype": { "name": string },
+          "priority"?: { "name": string },
+        }
+      }
+
+      Rules:
+      - Return ONLY valid JSON.
+      - Summary must be concise (max 120 characters) — a one-line title of the issue.
+      - Description must be a clear, structured explanation of the issue or request — do NOT repeat the thread verbatim.
+      - Use Jira issue types: Bug, Task, Sub-task, Story, Outline use case / epic, Spike, Retro task.
+      - Use Jira priorities: Lowest, Low, Medium, High, Highest.
+      - If priority is unclear, omit it.
+      - Use the provided project key: "${params.projectKey}".
+
+      Slack thread messages:
+      """
+      ${params.threadMessages.join("\n")}
+      """
+      `,
+      temperature: 0.7, // Slightly creative for engaging content
+      maxRetries: 2,
+    });
+    console.log("OpenAI response:", response.text);
+    return JSON.parse(response.text);
+  } catch (error) {
+    if (APICallError.isInstance(error)) {
+      throw new Error(`OpenAI API Error: ${error.message}`);
+    }
+    throw error;
+  }
 };

@@ -27,13 +27,16 @@
     "url": "https://github.com/slack-samples/bolt-ts-starter-template/issues"
   },
   "dependencies": {
+    "@ai-sdk/azure": "^1.0.0",
     "@slack/bolt": "^4.6.0",
+    "ai": "^4.0.0",
     "axios": "^1.13.2",
     "dotenv": "~17.2.3",
-    "openai": "^6.15.0"
+    "openai": "^4.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.8",
+    "@types/json-schema": "^7.0.15",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
