@@ -3,7 +3,6 @@ import type {
   SlackShortcutMiddlewareArgs,
 } from "@slack/bolt";
 import axios from "axios";
-import { fetchJiraProjects } from "../../handlers/get-jira-projects.js";
 
 const createJiraFromThreadShortcut = async ({
   ack,
@@ -26,7 +25,6 @@ const createJiraFromThreadShortcut = async ({
     const replies = await client.conversations.replies({
       channel,
       ts: threadTs,
-      // Limit on how many messages the thread can have
       limit: 100,
     });
 
@@ -45,12 +43,6 @@ const createJiraFromThreadShortcut = async ({
       });
       return;
     }
-
-    // console.log("Thread Messages:", JSON.stringify(threadMessages, null, 2));
-
-    const projects = await fetchJiraProjects();
-
-    // console.log(JSON.stringify(projects, null, 2))
 
     await client.views.open({
       trigger_id: body.trigger_id,
@@ -91,15 +83,11 @@ const createJiraFromThreadShortcut = async ({
       },
     });
 
-    // await respond({
-    //   text: `Found ${replies.messages.length} messages. Creating Jira ticket…`,
-    //   thread_ts: threadTs,
-    // });
   } catch (error) {
     logger.error("createJiraFromThreadAction failed", error);
 
     if (axios.isAxiosError(error)) {
-      console.error("Jira error:", error.response?.data);
+      logger.error("Jira error:", error.response?.data);
     }
 
     await respond({

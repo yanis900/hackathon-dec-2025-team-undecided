@@ -53,10 +53,9 @@ export const createOpenaiResponse = async (
       ${params.threadMessages.join("\n")}
       """
       `,
-      temperature: 0.7, // Slightly creative for engaging content
+      temperature: 0.7,
       maxRetries: 2,
     });
-    console.log("OpenAI response:", response.text);
     return JSON.parse(response.text);
   } catch (error) {
     if (APICallError.isInstance(error)) {

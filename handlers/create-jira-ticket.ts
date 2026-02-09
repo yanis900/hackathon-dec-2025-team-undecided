@@ -2,10 +2,11 @@ import axios from "axios";
 import { CreateJiraTicketPayload, CreateJiraTicketResponse } from "../types.js";
 
 export const createJiraTicket = async (
-  payload: CreateJiraTicketPayload
+  payload: CreateJiraTicketPayload,
+  email?: string,
 ): Promise<CreateJiraTicketResponse> => {
   const authHeader = Buffer.from(
-    `${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`
+    `${email || process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`,
   ).toString("base64");
 
   const response = await axios.post<CreateJiraTicketResponse>(
@@ -17,7 +18,7 @@ export const createJiraTicket = async (
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-    }
+    },
   );
 
   return response.data;

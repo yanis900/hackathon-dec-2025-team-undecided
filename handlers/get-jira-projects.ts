@@ -1,9 +1,11 @@
 import axios from "axios";
 import { JiraProject } from "../types.js";
 
-export const fetchJiraProjects = async (): Promise<JiraProject[]> => {
+export const fetchJiraProjects = async (
+  email?: string,
+): Promise<JiraProject[]> => {
   const authHeader = Buffer.from(
-    `${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`
+    `${email || process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`,
   ).toString("base64");
 
   const allProjects: JiraProject[] = [];
@@ -23,7 +25,7 @@ export const fetchJiraProjects = async (): Promise<JiraProject[]> => {
           startAt,
           maxResults,
         },
-      }
+      },
     );
 
     const { values, isLast: last } = response.data;

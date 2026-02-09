@@ -7,6 +7,7 @@ const createJiraModalView = async ({
   ack,
   client,
   logger,
+  body,
   view,
 }: AllMiddlewareArgs & SlackViewMiddlewareArgs) => {
   await ack();
@@ -27,7 +28,7 @@ const createJiraModalView = async ({
     const selectedProjectKey =
       view.state.values.project_block.project_select.selected_option?.value;
 
-    console.log("Selected Project Key:", selectedProjectKey);
+    logger.info("Selected Project Key:", selectedProjectKey);
 
     if (!selectedProjectKey || !threadMessages) {
       throw new Error("Missing required fields");
@@ -42,7 +43,15 @@ const createJiraModalView = async ({
       jiraPayload.fields.description = toADF(jiraPayload.fields.description);
     }
 
-    const issue = await createJiraTicket(jiraPayload);
+    logger.info("Generated Jira Payload:", jiraPayload);
+
+    const result = await client.users.info({
+      user: body.user.id,
+    });
+
+    const email = result.user?.profile?.email;
+
+    const issue = await createJiraTicket(jiraPayload, email || "");
 
     await client.chat.postMessage({
       channel,

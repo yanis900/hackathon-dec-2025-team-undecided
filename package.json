@@ -31,8 +31,7 @@
     "@slack/bolt": "^4.6.0",
     "ai": "^4.0.0",
     "axios": "^1.13.2",
-    "dotenv": "~17.2.3",
-    "openai": "^4.0.0"
+    "dotenv": "~17.2.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.8",
