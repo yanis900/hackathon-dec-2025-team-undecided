@@ -1,7 +1,7 @@
-import { CreateJiraTicketPayload } from "../types.js";
+
 import { createAzure } from "@ai-sdk/azure";
 import { generateText, APICallError } from "ai";
-import { sanitise } from "../helpers/sanitise.js";
+import { CreateJiraTicketPayload } from "../../types/index.js";
 
 type CreateOpenaiResponseParams = {
   projectKey: string;

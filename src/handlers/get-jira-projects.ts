@@ -1,5 +1,5 @@
 import axios from "axios";
-import { JiraProject } from "../types.js";
+import { JiraProject } from "../../types/index.js";
 
 export const fetchJiraProjects = async (
   email?: string,

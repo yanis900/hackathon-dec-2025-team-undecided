@@ -1,5 +1,6 @@
 import axios from "axios";
-import { CreateJiraTicketPayload, CreateJiraTicketResponse } from "../types.js";
+import { CreateJiraTicketPayload, CreateJiraTicketResponse } from "../../types/index.js";
+
 
 export const createJiraTicket = async (
   payload: CreateJiraTicketPayload,

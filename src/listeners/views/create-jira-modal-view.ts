@@ -48,13 +48,13 @@ const createJiraModalView = async ({
     const res = await client.users.info({ user: body.user.id });
     const email = res.user?.profile?.email;
 
-    const issue = await createJiraTicket(jiraPayload, email);
+    // const issue = await createJiraTicket(jiraPayload, email);
 
-    await client.chat.postMessage({
-      channel,
-      thread_ts: threadTs,
-      text: `🎫 Jira ticket created: <${process.env.JIRA_BASE_URL}/browse/${issue.key}|${issue.key}: ${jiraPayload.fields.summary}>`,
-    });
+    // await client.chat.postMessage({
+    //   channel,
+    //   thread_ts: threadTs,
+    //   text: `🎫 Jira ticket created: <${process.env.JIRA_BASE_URL}/browse/${issue.key}|${issue.key}: ${jiraPayload.fields.summary}>`,
+    // });
   } catch (error) {
     logger.error("Failed to submit Jira modal", error);
   }
