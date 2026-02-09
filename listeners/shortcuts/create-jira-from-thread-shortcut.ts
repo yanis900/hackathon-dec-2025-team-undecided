@@ -82,7 +82,6 @@ const createJiraFromThreadShortcut = async ({
         ],
       },
     });
-
   } catch (error) {
     logger.error("createJiraFromThreadAction failed", error);
 

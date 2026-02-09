@@ -45,13 +45,10 @@ const createJiraModalView = async ({
 
     logger.info("Generated Jira Payload:", jiraPayload);
 
-    const result = await client.users.info({
-      user: body.user.id,
-    });
+    const res = await client.users.info({ user: body.user.id });
+    const email = res.user?.profile?.email;
 
-    const email = result.user?.profile?.email;
-
-    const issue = await createJiraTicket(jiraPayload, email || "");
+    const issue = await createJiraTicket(jiraPayload, email);
 
     await client.chat.postMessage({
       channel,
